@@ -12,20 +12,23 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.expressApp = void 0;
 const express_1 = __importDefault(require("express"));
-const express_app_1 = require("./express-app");
-const config_1 = require("./config");
-const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
-    const app = (0, express_1.default)();
-    (0, config_1.connectDB)();
-    yield (0, express_app_1.expressApp)(app);
-    app
-        .listen(config_1.PORT, () => {
-        console.log(`server is running on ${config_1.URL}:${config_1.PORT}`);
-    })
-        .on("error", (err) => {
-        console.log(err);
-        process.exit();
-    });
+const cors_1 = __importDefault(require("cors"));
+const controller_1 = require("./controller");
+const error_handler_1 = __importDefault(require("./utils/error-handler"));
+const cookie_parser_1 = __importDefault(require("cookie-parser"));
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
+const expressApp = (app) => __awaiter(void 0, void 0, void 0, function* () {
+    app.use(express_1.default.json({ limit: "1mb" }));
+    app.use(express_1.default.urlencoded({ extended: true, limit: "1mb" }));
+    app.use((0, cors_1.default)());
+    app.use((0, cookie_parser_1.default)());
+    app.use(express_1.default.static(__dirname + "/public"));
+    //api
+    (0, controller_1.admin)(app);
+    // error handling
+    app.use(error_handler_1.default);
 });
-startServer();
+exports.expressApp = expressApp;

@@ -15,3 +15,4 @@ export const connectDB = async () => {
 
 export const PORT = process.env.PORT || 4000;
 export const URL = process.env.URL as string;
+export const APP_SECRET = process.env.APP_SECRET as string;

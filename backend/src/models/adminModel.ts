@@ -6,10 +6,10 @@ export interface Admin extends Document{
     email: string;
     phone: string;
     password: string;
+    salt: string;
     role:string;
     verified: boolean;
     address: string;
-
 
 }
 const adminSchema: Schema<Admin> = new Schema({
@@ -30,10 +30,14 @@ const adminSchema: Schema<Admin> = new Schema({
     type: String,
     required: true,
   },
+  salt:{
+    type:String,
+
+  },
   role: {
     type: String,
-    enum: ['admin', 'superadmin'], // Adjust roles as needed
-    default: 'admin',
+    enum: ["admin", "superadmin"], // Adjust roles as needed
+    default: "admin",
   },
   verified: {
     type: Boolean,
@@ -42,24 +46,33 @@ const adminSchema: Schema<Admin> = new Schema({
   address: {
     type: String,
   },
+}, {
+  toJSON: {
+    transform(doc, ret) {
+      delete ret.password;
+      delete ret.salt;
+      delete ret.__v;
+    }
+  },
+  timestamps: true
 });
 
-// Hash the password before saving to the database
-adminSchema.pre('save', async function (next) {
-  const admin = this as Admin;
+// // Hash the password before saving to the database
+// adminSchema.pre('save', async function (next) {
+//   const admin = this as Admin;
 
-  // Hash the password only if it's modified or new
-  if (!admin.isModified('password')) return next();
+//   // Hash the password only if it's modified or new
+//   if (!admin.isModified('password')) return next();
 
-  // Generate a salt and hash the password
-  const saltRounds = 10;
-  const hashedPassword = await bcrypt.hash(admin.password, saltRounds);
+//   // Generate a salt and hash the password
+//   const saltRounds = 10;
+//   const hashedPassword = await bcrypt.hash(admin.password, saltRounds);
 
-  // Replace the plain text password with the hashed password
-  admin.password = hashedPassword;
+//   // Replace the plain text password with the hashed password
+//   admin.password = hashedPassword;
 
-  next();
-});
+//   next();
+// });
 
 // Compare entered password with stored hashed password
 adminSchema.methods.comparePassword = async function (
@@ -68,6 +81,6 @@ adminSchema.methods.comparePassword = async function (
   return bcrypt.compare(enteredPassword, this.password);
 };
 
-const AdminModel = mongoose.model<Admin>('Admin', adminSchema);
+const AdminModel = mongoose.model<Admin>("Admin", adminSchema);
 
 export default AdminModel;

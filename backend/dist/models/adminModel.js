@@ -55,10 +55,13 @@ const adminSchema = new mongoose_1.Schema({
         type: String,
         required: true,
     },
+    salt: {
+        type: String,
+    },
     role: {
         type: String,
-        enum: ['admin', 'superadmin'], // Adjust roles as needed
-        default: 'admin',
+        enum: ["admin", "superadmin"], // Adjust roles as needed
+        default: "admin",
     },
     verified: {
         type: Boolean,
@@ -67,27 +70,33 @@ const adminSchema = new mongoose_1.Schema({
     address: {
         type: String,
     },
+}, {
+    toJSON: {
+        transform(doc, ret) {
+            delete ret.password;
+            delete ret.salt;
+            delete ret.__v;
+        }
+    },
+    timestamps: true
 });
-// Hash the password before saving to the database
-adminSchema.pre('save', function (next) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const admin = this;
-        // Hash the password only if it's modified or new
-        if (!admin.isModified('password'))
-            return next();
-        // Generate a salt and hash the password
-        const saltRounds = 10;
-        const hashedPassword = yield bcrypt_1.default.hash(admin.password, saltRounds);
-        // Replace the plain text password with the hashed password
-        admin.password = hashedPassword;
-        next();
-    });
-});
+// // Hash the password before saving to the database
+// adminSchema.pre('save', async function (next) {
+//   const admin = this as Admin;
+//   // Hash the password only if it's modified or new
+//   if (!admin.isModified('password')) return next();
+//   // Generate a salt and hash the password
+//   const saltRounds = 10;
+//   const hashedPassword = await bcrypt.hash(admin.password, saltRounds);
+//   // Replace the plain text password with the hashed password
+//   admin.password = hashedPassword;
+//   next();
+// });
 // Compare entered password with stored hashed password
 adminSchema.methods.comparePassword = function (enteredPassword) {
     return __awaiter(this, void 0, void 0, function* () {
         return bcrypt_1.default.compare(enteredPassword, this.password);
     });
 };
-const AdminModel = mongoose_1.default.model('Admin', adminSchema);
+const AdminModel = mongoose_1.default.model("Admin", adminSchema);
 exports.default = AdminModel;

@@ -8,24 +8,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = __importDefault(require("express"));
-const express_app_1 = require("./express-app");
-const config_1 = require("./config");
-const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
-    const app = (0, express_1.default)();
-    (0, config_1.connectDB)();
-    yield (0, express_app_1.expressApp)(app);
-    app
-        .listen(config_1.PORT, () => {
-        console.log(`server is running on ${config_1.URL}:${config_1.PORT}`);
-    })
-        .on("error", (err) => {
-        console.log(err);
-        process.exit();
-    });
+const utils_1 = require("../utils");
+const UserAuth = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    const isAuthorized = yield (0, utils_1.ValidateSignature)(req);
+    if (isAuthorized) {
+        return next();
+    }
+    return res.status(403).json({ message: "Not Authorized" });
 });
-startServer();
+exports.default = UserAuth;
